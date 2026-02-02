@@ -1,6 +1,6 @@
 # https://just.systems
 
-SERVICE_NAME := "nks_embedding"
+SERVICE_NAME := "nks-embedding"
 
 # Hvis ingen kommando, vis tilgjengelige oppskrifter
 default:
