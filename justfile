@@ -7,12 +7,13 @@ default:
   @just --list
 
 # Bygg Docker bilde lokalt
-build:
-    docker build -t nks_cloud_embed . --platform=linux/amd64
+[arg('image', pattern='gpu|cpu')]
+build image="gpu":
+    docker build -t nks_cloud_embed -f {{image}}.Dockerfile --platform=linux/amd64 .
 
 # Lanser Docker bildet til Cloud Run
-deploy:
-    gcloud run deploy "{{SERVICE_NAME}}" \
+deploy: build
+    gcloud run deploy {{SERVICE_NAME}} \
         --source . \
         --region europe-west1 \
         --concurrency 64 \
@@ -28,8 +29,9 @@ deploy:
 
 # Fjern Cloud Run instansen og alle tilknytte ressurser
 delete:
-    gcloud run services delete "{{SERVICE_NAME}}" 
+    gcloud run services delete {{SERVICE_NAME}} 
 
-# Opprett en lokal tilkobling til Cloud Run instansen på port `9090`
-proxy:
-    gcloud run services proxy "{{SERVICE_NAME}}" --port=9090
+# Opprett en lokal tilkobling til Cloud Run instansen
+[arg('port', pattern='\d{4}')]
+proxy port="9090":
+    gcloud run services proxy {{SERVICE_NAME}} --port={{port}}
