@@ -19,6 +19,3 @@ ENV MAX_CONCURRENT_REQUESTS=64
 # av GCP:
 # https://docs.cloud.google.com/run/docs/tutorials/gpu-gemma-with-ollama#store-model-weights)
 ADD "./models${MODEL_ID}" "${MODEL_ID}"
-
-# Start TEI server
-ENTRYPOINT ["text-embeddings-router", "--json-output"]
