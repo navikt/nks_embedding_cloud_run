@@ -25,7 +25,7 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v3'
       - name: 'Download model weights'
-        run: gcloud storage cp --recursive "gs://nks-embedding-vekter/snowflake-arctic-embed-m-v2.0-nav" "models/."
+        run: mkdir "models" && gcloud storage cp --recursive "gs://nks-embedding-vekter/snowflake-arctic-embed-m-v2.0-nav" "models/."
       - name: 'Build and push'
         uses: nais/docker-build-push@v0
         id: docker-build-push
