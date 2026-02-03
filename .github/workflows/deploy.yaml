@@ -1,0 +1,60 @@
+name: 'Deploy to Cloud Run'
+
+on:
+  push:
+    branches: [ main ]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 'Build and push Docker container'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: 'Authenticate to GCP'
+        uses: 'google-github-actions/auth@v3'
+        with:
+          project_id: "nks-aiautomatisering-prod-194a"
+          workload_identity_provider: "${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}"
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v3'
+      - name: 'Download model weights'
+        run: gcloud storage cp --recursive "gs://nks-embedding-vekter/snowflake-arctic-embed-m-v2.0-nav" "models/."
+      - name: 'Build and push'
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: nks-aiautomatisering
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+
+  deploy-cloud-run:
+    name: 'Deploy to Cloud Run'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: 'Authenticate to GCP'
+        uses: 'google-github-actions/auth@v3'
+        with:
+          project_id: "nks-aiautomatisering-prod-194a"
+          workload_identity_provider: "${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}"
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v3'
+      - name: 'Setup just'
+        uses: extractions/setup-just@v3
+      - name: 'Deploy with just'
+        run: just deploy ${{ needs.build.outputs.image }}
+      - name: 'Describe service'
+        run: just describe
