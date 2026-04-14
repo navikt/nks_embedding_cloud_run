@@ -54,7 +54,7 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v3'
       - name: 'Setup just'
-        uses: extractions/setup-just@v3
+        uses: extractions/setup-just@v4
       - name: 'Deploy with just'
         run: just deploy ${{ needs.build.outputs.image }}
       - name: 'Describe service'
